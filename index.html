@@ -47,13 +47,10 @@ body {
 .fondo {
     position: absolute;
     inset: 0;
-
     width: 100%;
     height: 100%;
-
     object-fit: cover;
     object-position: center;
-
     z-index: 0;
 }
 
@@ -65,7 +62,6 @@ body {
 #cuadro-texto {
 
     display: none;
-
     position: absolute;
 
     width: min(42vw, 520px);
@@ -81,13 +77,10 @@ body {
     border-radius: 5px;
 
     align-items: center;
-
     padding: 0 20px;
 
     z-index: 1;
-
     pointer-events: none;
-
     overflow: hidden;
 }
 
@@ -95,31 +88,21 @@ body {
 /* TEXTO QUE SE ESCRIBE */
 
 #texto-escrito {
-
     color: #222;
-
     font-size: clamp(18px, 2vw, 25px);
-
     white-space: pre;
-
 }
 
 
 /* CURSOR PARPADEANTE */
 
 #cursor {
-
     display: inline-block;
-
     width: 2px;
     height: 25px;
-
     background: #333;
-
     margin-left: 3px;
-
     animation: parpadear 0.8s infinite;
-
 }
 
 @keyframes parpadear {
@@ -144,15 +127,11 @@ body {
     position: absolute;
 
     width: min(48vw, 680px);
-
     max-height: 75vh;
-
     height: auto;
 
     object-fit: contain;
-
     z-index: 2;
-
     pointer-events: none;
 
     animation: aparecer 0.3s ease;
@@ -251,7 +230,8 @@ const fondos = {
 
     1: "fondo.01.png",
     2: "fondo.02.png",
-    3: "fondo.03.png"
+    3: "fondo.03.png",
+    4: "fondo.04.png"
 
 };
 
@@ -278,8 +258,6 @@ function cambiarPantalla(numero) {
 // =================================
 // ESCRITURA SIMULADA
 // =================================
-
-// Cada tecla física representa una letra diferente.
 
 const letrasTeclado = {
 
@@ -308,7 +286,9 @@ let textoActual = "";
 
 function escribirLetra(tecla) {
 
-    if (textoActual.length >= 12) {
+    // La frase completa tiene 13 caracteres.
+
+    if (textoActual.length >= 13) {
 
         return;
 
@@ -536,6 +516,49 @@ function reproducirSiguiente() {
 
 
 // =================================
+// LIMPIAR PANTALLA 3
+// =================================
+
+function limpiarPantalla3() {
+
+    // Eliminar todas las imágenes.
+
+    document
+        .querySelectorAll(".imagen-publicacion")
+        .forEach(function(imagen) {
+
+            imagen.remove();
+
+        });
+
+
+    // Detener el audio actual.
+
+    if (audioActual) {
+
+        audioActual.onended = null;
+
+        audioActual.onerror = null;
+
+        audioActual.pause();
+
+        audioActual.currentTime = 0;
+
+        audioActual = null;
+
+    }
+
+
+    // Vaciar la cola de audios pendientes.
+
+    colaAudios = [];
+
+    reproduciendo = false;
+
+}
+
+
+// =================================
 // ACTIVAR INTERACCIÓN
 // =================================
 
@@ -546,12 +569,12 @@ function activarInteraccion(tecla) {
     escribirLetra(tecla);
 
 
-    // Mostrar la siguiente imagen.
+    // Mostrar una imagen.
 
     mostrarImagen();
 
 
-    // Agregar el siguiente audio a la cola.
+    // Agregar un audio a la cola.
 
     agregarAudio();
 
@@ -579,13 +602,13 @@ function reiniciarTodo() {
 
     if (audioActual) {
 
-        audioActual.pause();
-
-        audioActual.currentTime = 0;
-
         audioActual.onended = null;
 
         audioActual.onerror = null;
+
+        audioActual.pause();
+
+        audioActual.currentTime = 0;
 
         audioActual = null;
 
@@ -626,7 +649,6 @@ function reiniciarTodo() {
 
 document.addEventListener("keydown", function(event) {
 
-
     // Evitar repeticiones al mantener una tecla.
 
     if (event.repeat) {
@@ -653,7 +675,7 @@ document.addEventListener("keydown", function(event) {
 
         event.preventDefault();
 
-        if (pantallaActual === 3) {
+        if (pantallaActual === 4) {
 
             reiniciarTodo();
 
@@ -670,7 +692,6 @@ document.addEventListener("keydown", function(event) {
 
     if (pantallaActual === 1) {
 
-
         if (event.code === "ArrowRight") {
 
             event.preventDefault();
@@ -679,7 +700,6 @@ document.addEventListener("keydown", function(event) {
 
         }
 
-
         if (event.code === "ArrowLeft") {
 
             event.preventDefault();
@@ -687,7 +707,6 @@ document.addEventListener("keydown", function(event) {
             cambiarPantalla(2);
 
         }
-
 
         return;
 
@@ -700,7 +719,6 @@ document.addEventListener("keydown", function(event) {
 
     if (pantallaActual === 2) {
 
-
         if (event.code === "Enter") {
 
             event.preventDefault();
@@ -708,7 +726,6 @@ document.addEventListener("keydown", function(event) {
             cambiarPantalla(3);
 
         }
-
 
         return;
 
@@ -721,6 +738,24 @@ document.addEventListener("keydown", function(event) {
 
     if (pantallaActual === 3) {
 
+        // Enter lleva a la pantalla 4.
+
+        if (event.code === "Enter") {
+
+            event.preventDefault();
+
+            // Detener audios y eliminar imágenes.
+
+            limpiarPantalla3();
+
+            // Cambiar a la pantalla 4.
+
+            cambiarPantalla(4);
+
+            return;
+
+        }
+
 
         // Teclas que escriben y activan imágenes y sonidos.
 
@@ -731,6 +766,8 @@ document.addEventListener("keydown", function(event) {
             activarInteraccion(event.code);
 
         }
+
+        return;
 
     }
 
