@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<title>EL ODIO GARPA - Versión celular</title>
+
+<style>
+
+/* =================================
+   CONFIGURACIÓN GENERAL
+================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+    font-family: Arial, sans-serif;
+}
+
+#pantalla {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+}
+
+/* =================================
+   FONDOS
+================================= */
+
+#fondo {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    z-index: 1;
+}
+
+/* =================================
+   CAMPO DE ESCRITURA
+================================= */
+
+#entrada-texto {
+    position: absolute;
+    top: 42%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    width: 78%;
+    height: 55px;
+
+    z-index: 3;
+
+    border: 2px solid #c67cff;
+    border-radius: 12px;
+
+    background: rgba(255,255,255,0.9);
+
+    color: #000;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+
+    padding: 8px;
+    outline: none;
+}
+
+#entrada-texto::placeholder {
+    color: #555;
+    opacity: 1;
+}
+
+/* =================================
+   IMÁGENES QUE APARECEN AL ESCRIBIR
+================================= */
+
+.imagen-publicacion {
+    position: absolute;
+
+    width: 82vw;
+    max-width: 440px;
+    max-height: 65dvh;
+
+    height: auto;
+    object-fit: contain;
+
+    z-index: 5;
+
+    pointer-events: none;
+
+    animation: aparecer 0.3s ease;
+}
+
+@keyframes aparecer {
+
+    from {
+        opacity: 0;
+        transform: scale(0.7);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+}
+
+/* =================================
+   BOTONES
+================================= */
+
+.controles {
+    position: absolute;
+    left: 0;
+    width: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+
+    z-index: 100;
+    padding: 0 15px;
+}
+
+#controles-pantalla1 {
+    bottom: 8%;
+}
+
+#controles-pantalla2 {
+    bottom: 8%;
+}
+
+#controles-pantalla3 {
+    bottom: 5%;
+}
+
+#controles-pantalla4 {
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 4px);
+}
+
+.boton {
+    background: linear-gradient(90deg, #c67cff, #7ffaff);
+
+    border: none;
+    border-radius: 15px;
+
+    color: #fff;
+
+    font-family: "29LT BurkaSemi Condesed", sans-serif;
+    font-size: clamp(18px, 5vw, 26px);
+    font-weight: bold;
+
+    text-transform: uppercase;
+
+    padding: 10px 30px;
+
+    min-width: 90px;
+    min-height: 48px;
+
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+/* =================================
+   OCULTAR ELEMENTOS
+================================= */
+
+.oculto {
+    display: none !important;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="pantalla">
+
+    <!-- FONDO -->
+    <img id="fondo" src="fondocelular.01.png" alt="">
+
+    <!-- CAMPO DE ESCRITURA -->
+    <input
+        type="text"
+        id="entrada-texto"
+        class="oculto"
+        autocomplete="off"
+        autocapitalize="characters"
+        spellcheck="false"
+        placeholder="ESCRIBÍ EL ODIO GARPA"
+    >
+
+    <!-- BOTONES PANTALLA 1 -->
+    <div class="controles" id="controles-pantalla1">
+
+        <button class="boton" onclick="irAPantalla(2)">
+            NO
+        </button>
+
+        <button class="boton" onclick="irAPantalla(3)">
+            SÍ
+        </button>
+
+    </div>
+
+    <!-- BOTÓN PANTALLA 2 -->
+    <div class="controles oculto" id="controles-pantalla2">
+
+        <button class="boton" onclick="irAPantalla(3)">
+            CONTINUAR
+        </button>
+
+    </div>
+
+    <!-- BOTÓN PANTALLA 3 -->
+    <div class="controles oculto" id="controles-pantalla3">
+
+        <button class="boton" onclick="irAPantalla(4)">
+            CONTINUAR
+        </button>
+
+    </div>
+
+    <!-- BOTÓN PANTALLA 4 -->
+    <div class="controles oculto" id="controles-pantalla4">
+
+        <button class="boton" onclick="reiniciar()">
+            VOLVER A EMPEZAR
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =================================
+   CONFIGURACIÓN
+================================= */
+
+const fondos = {
+    1: "fondocelular.01.png",
+    2: "fondocelular.02.png",
+    3: "fondocelular.03.png",
+    4: "fondocelular.04.png"
+};
+
+let pantallaActual = 1;
+
+let numeroImagen = 1;
+let numeroAudio = 1;
+
+let colaAudios = [];
+let audioActual = null;
+
+let textoAnterior = "";
+
+const entrada = document.getElementById("entrada-texto");
+const fondo = document.getElementById("fondo");
+
+
+/* =================================
+   CAMBIAR DE PANTALLA
+================================= */
+
+function irAPantalla(numero) {
+
+    pantallaActual = numero;
+
+    fondo.src = fondos[numero];
+
+    document.getElementById("controles-pantalla1").classList.add("oculto");
+    document.getElementById("controles-pantalla2").classList.add("oculto");
+    document.getElementById("controles-pantalla3").classList.add("oculto");
+    document.getElementById("controles-pantalla4").classList.add("oculto");
+
+    entrada.classList.add("oculto");
+
+    if (numero === 1) {
+
+        document.getElementById("controles-pantalla1").classList.remove("oculto");
+
+    }
+
+    if (numero === 2) {
+
+        document.getElementById("controles-pantalla2").classList.remove("oculto");
+
+    }
+
+    if (numero === 3) {
+
+        document.getElementById("controles-pantalla3").classList.remove("oculto");
+
+        entrada.classList.remove("oculto");
+
+        entrada.value = "";
+        textoAnterior = "";
+
+        entrada.focus();
+
+    }
+
+    if (numero === 4) {
+
+        document.getElementById("controles-pantalla4").classList.remove("oculto");
+
+        detenerAudios();
+        borrarImagenes();
+
+    }
+
+}
+
+
+/* =================================
+   ESCRITURA E INTERACCIÓN
+================================= */
+
+entrada.addEventListener("input", function() {
+
+    const textoNuevo = entrada.value;
+
+    let inicio = 0;
+
+    while (
+        inicio < textoAnterior.length &&
+        inicio < textoNuevo.length &&
+        textoAnterior[inicio] === textoNuevo[inicio]
+    ) {
+        inicio++;
+    }
+
+    let finalAnterior = textoAnterior.length;
+    let finalNuevo = textoNuevo.length;
+
+    while (
+        finalAnterior > inicio &&
+        finalNuevo > inicio &&
+        textoAnterior[finalAnterior - 1] === textoNuevo[finalNuevo - 1]
+    ) {
+        finalAnterior--;
+        finalNuevo--;
+    }
+
+    const letrasAgregadas = textoNuevo.substring(inicio, finalNuevo);
+
+    for (const letra of letrasAgregadas) {
+
+        if (letra !== "\n" && letra !== "\r") {
+            activarInteraccion();
+        }
+
+    }
+
+    textoAnterior = textoNuevo;
+
+});
+
+
+/* =================================
+   ACTIVAR IMAGEN Y AUDIO
+================================= */
+
+function activarInteraccion() {
+
+    if (pantallaActual !== 3) return;
+
+    mostrarImagen();
+    agregarAudio();
+
+}
+
+
+/* =================================
+   MOSTRAR IMÁGENES
+================================= */
+
+function mostrarImagen() {
+
+    const imagen = document.createElement("img");
+
+    let nombre = String(numeroImagen).padStart(2, "0");
+
+    imagen.src = `imagenes/tweet.${nombre}.png`;
+
+    imagen.classList.add("imagen-publicacion");
+
+    imagen.onload = function() {
+
+        const ancho = imagen.offsetWidth;
+        const alto = imagen.offsetHeight;
+
+        const maxX = Math.max(0, window.innerWidth - ancho);
+
+        // Reserva espacio inferior para el botón CONTINUAR.
+        const espacioInferior = 110;
+
+        const maxY = Math.max(
+            0,
+            window.innerHeight - alto - espacioInferior
+        );
+
+        imagen.style.left = Math.random() * maxX + "px";
+        imagen.style.top = Math.random() * maxY + "px";
+
+    };
+
+    document.getElementById("pantalla").appendChild(imagen);
+
+    numeroImagen++;
+
+    if (numeroImagen > 10) {
+        numeroImagen = 1;
+    }
+
+}
+
+
+/* =================================
+   AUDIOS EN SECUENCIA
+================================= */
+
+function agregarAudio() {
+
+    let nombre = String(numeroAudio).padStart(2, "0");
+
+    colaAudios.push(`audios/milei.${nombre}.mp3`);
+
+    numeroAudio++;
+
+    if (numeroAudio > 11) {
+        numeroAudio = 1;
+    }
+
+    reproducirSiguienteAudio();
+
+}
+
+
+function reproducirSiguienteAudio() {
+
+    if (audioActual !== null) return;
+
+    if (colaAudios.length === 0) return;
+
+    const archivo = colaAudios.shift();
+
+    audioActual = new Audio(archivo);
+    audioActual.volume = 0.70;
+
+    audioActual.onended = function() {
+
+        audioActual = null;
+        reproducirSiguienteAudio();
+
+    };
+
+    audioActual.onerror = function() {
+
+        audioActual = null;
+        reproducirSiguienteAudio();
+
+    };
+
+    audioActual.play().catch(function() {
+
+        audioActual = null;
+        reproducirSiguienteAudio();
+
+    });
+
+}
+
+
+/* =================================
+   DETENER AUDIOS
+================================= */
+
+function detenerAudios() {
+
+    colaAudios = [];
+
+    if (audioActual !== null) {
+
+        audioActual.pause();
+        audioActual.currentTime = 0;
+        audioActual = null;
+
+    }
+
+}
+
+
+/* =================================
+   BORRAR IMÁGENES
+================================= */
+
+function borrarImagenes() {
+
+    document.querySelectorAll(".imagen-publicacion").forEach(function(imagen) {
+
+        imagen.remove();
+
+    });
+
+}
+
+
+/* =================================
+   REINICIAR PROGRAMA
+================================= */
+
+function reiniciar() {
+
+    detenerAudios();
+    borrarImagenes();
+
+    numeroImagen = 1;
+    numeroAudio = 1;
+
+    textoAnterior = "";
+    entrada.value = "";
+
+    irAPantalla(1);
+
+}
+
+</script>
+
+</body>
+</html>
